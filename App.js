@@ -1,5 +1,7 @@
 import * as Location from 'expo-location';
+import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
+import { Fontisto } from '@expo/vector-icons';
 import {
   View,
   StyleSheet,
@@ -12,6 +14,15 @@ import {
 const { width } = Dimensions.get('window');
 
 const API_KEY = 'c38a798c60de0a8957230c8ba2ad1101';
+
+const icons = {
+  Clouds: 'cloudy',
+  Thunderstorm: 'lightnings',
+  Drizzle: 'rain',
+  Rain: 'rain',
+  Snow: 'snow',
+  Clear: 'day-sunny',
+};
 
 export default function App() {
   const [city, setCity] = useState('Loading');
@@ -35,16 +46,16 @@ export default function App() {
   const getLocation = async () => {
     const {
       coords: { latitude, longitude },
-    } = await Location.getCurrentPositionAsync({ accuracy: 6 });
-    getWeather(latitude, longitude);
+    } = await Location.getCurrentPositionAsync({ accuracy: 5 });
     getCityName(latitude, longitude);
+    getWeather(latitude, longitude);
   };
 
-  const getCityName = async (latitude, longitude) => {
+  const getCityName = async (lat, lon) => {
     const location = await Location.reverseGeocodeAsync(
       {
-        latitude,
-        longitude,
+        latitude: lat,
+        longitude: lon,
       },
       { useGoogleMaps: false }
     );
@@ -72,7 +83,7 @@ export default function App() {
             showsHorizontalScrollIndicator={false}
           >
             {days.length === 0 ? (
-              <View style={styles.day}>
+              <View style={styles.loadingContainer}>
                 <ActivityIndicator
                   color="white"
                   size="large"
@@ -82,9 +93,23 @@ export default function App() {
             ) : (
               days.map((day, index) => (
                 <View style={styles.day} key={index}>
-                  <Text style={styles.temp}>
-                    {parseFloat(day.temp.day).toFixed(1)}
-                  </Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                    }}
+                  >
+                    <Text style={styles.temp}>
+                      {parseFloat(day.temp.day).toFixed(1)}
+                    </Text>
+                    <Fontisto
+                      name={icons[day.weather[0].main]}
+                      size={68}
+                      color="white"
+                    />
+                  </View>
                   <Text style={styles.description}>{day.weather[0].main}</Text>
                   <Text style={styles.tinyText}>
                     {day.weather[0].description}
@@ -99,6 +124,7 @@ export default function App() {
           <Text>We need permission...</Text>
         </View>
       )}
+      <StatusBar style="light" />
     </View>
   );
 }
@@ -116,21 +142,30 @@ const styles = StyleSheet.create({
   cityName: {
     fontSize: 48,
     fontWeight: '500',
+    color: 'white',
   },
   weather: {},
   day: {
     width,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    padding: '0.5% 0%',
   },
   temp: {
     marginTop: 50,
-    fontSize: 158,
+    fontSize: 100,
+    color: 'white',
   },
   description: {
     marginTop: -20,
-    fontSize: 48,
+    fontSize: 38,
+    color: 'white',
   },
   tinyText: {
-    fontSize: 20,
+    fontSize: 18,
+    color: 'white',
+  },
+  loadingContainer: {
+    width,
+    alignItems: 'center',
   },
 });
